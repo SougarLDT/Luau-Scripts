@@ -52,3 +52,4 @@ function PartsManipulatorClass.toggle(self : PartsManipulatorObject, value: bool
 		self:stop()
 	end
 end
+return PartsManipulatorClass
