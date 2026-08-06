@@ -39,8 +39,9 @@ function PartsManipulatorClass.stop(self : PartsManipulatorObject)
 		self.runConnection:Disconnect()
 		self.runConnection = nil
 	end
-	for _,cleaner in pairs(self.updatesCleaner) do
+	for key,cleaner in pairs(self.updatesCleaner) do
 		cleaner()
+		self.updatesCleaner[key] = nil
 	end
 end
 
