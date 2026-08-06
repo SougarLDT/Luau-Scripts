@@ -1,0 +1,48 @@
+export type PartsManipulatorObject = {
+	name: string,
+	state: boolean,
+	runConnection: RBXScriptConnection?,
+	update: (self: PartsManipulatorObject) -> (),
+	start: (self: PartsManipulatorObject   ) -> (),
+	stop: (self: PartsManipulatorObject) -> (),
+	toggle: (self: PartsManipulatorObject  , value: boolean) -> (),
+}
+
+local PartsManipulatorClass = {}
+PartsManipulatorClass.__index = PartsManipulatorClass
+
+function PartsManipulatorClass.new(name: string, updateFunction: (self: PartsManipulatorObject) -> ()): PartsManipulatorObject
+	local self = setmetatable({}, PartsManipulatorClass)
+	self.name = name
+	self.state = false
+	self.runConnection = nil
+	self.update = updateFunction
+	return self
+end
+
+function PartsManipulatorClass.start(self : PartsManipulatorObject)
+	if self.state then
+		return
+	end
+	self.state = true
+
+	self.runConnection = game:GetService("RunService").Heartbeat:Connect(function()
+		self:update()
+	end)
+end
+
+function PartsManipulatorClass.stop(self : PartsManipulatorObject)
+	self.state = false
+	if self.runConnection then
+		self.runConnection:Disconnect()
+		self.runConnection = nil
+	end
+end
+
+function PartsManipulatorClass.toggle(self : PartsManipulatorObject, value: boolean)
+	if value then
+		self:start()
+	else
+		self:stop()
+	end
+end
