@@ -1,3 +1,4 @@
+local RunService = game:GetService("RunService")
 export type PartsManipulatorObject = {
 	name: string,
 	state: boolean,
@@ -6,6 +7,7 @@ export type PartsManipulatorObject = {
 	start: (self: PartsManipulatorObject   ) -> (),
 	stop: (self: PartsManipulatorObject) -> (),
 	toggle: (self: PartsManipulatorObject  , value: boolean) -> (),
+	updatesCleaner : {[any] : () -> ()}
 }
 
 local PartsManipulatorClass = {}
@@ -16,6 +18,7 @@ function PartsManipulatorClass.new(name: string, updateFunction: (self: PartsMan
 	self.name = name
 	self.state = false
 	self.runConnection = nil
+	self.updatesCleaner = {}
 	self.update = updateFunction
 	return self
 end
@@ -25,8 +28,7 @@ function PartsManipulatorClass.start(self : PartsManipulatorObject)
 		return
 	end
 	self.state = true
-
-	self.runConnection = game:GetService("RunService").Heartbeat:Connect(function()
+	self.runConnection = RunService.Heartbeat:Connect(function()
 		self:update()
 	end)
 end
@@ -36,6 +38,9 @@ function PartsManipulatorClass.stop(self : PartsManipulatorObject)
 	if self.runConnection then
 		self.runConnection:Disconnect()
 		self.runConnection = nil
+	end
+	for _,cleaner in pairs(self.updatesCleaner) do
+		cleaner()
 	end
 end
 
