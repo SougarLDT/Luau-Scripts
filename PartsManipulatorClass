@@ -15,8 +15,8 @@ type Params = {
 	startCallback : Callback?,
 	endCallback : Callback?,
 }
-type UpdateCallback = (self: PartsManipulatorObject) -> () -> ()
-type Callback = () -> ()
+type UpdateCallback = (self: PartsManipulatorObject) -> ()
+type Callback = (PartsManipulatorObject) -> ()
 local PartsManipulatorClass = {}
 PartsManipulatorClass.__index = PartsManipulatorClass
 
@@ -38,7 +38,7 @@ function PartsManipulatorClass.start(self : PartsManipulatorObject)
 	end
 	self.state = true
 	if self.params.startCallback then
-		self.params.startCallback()
+		self.params.startCallback(self)
 	end
 	self.runConnection = RunService.Heartbeat:Connect(function()
 		self:update()
@@ -56,7 +56,7 @@ function PartsManipulatorClass.stop(self : PartsManipulatorObject)
 		self.updatesCleaner[key] = nil
 	end
 	if self.params.endCallback then
-		self.params.endCallback()
+		self.params.endCallback(self)
 	end
 end
 
