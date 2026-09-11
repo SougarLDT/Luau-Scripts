@@ -1,25 +1,34 @@
+--!strict
 local RunService = game:GetService("RunService")
 export type PartsManipulatorObject = {
 	name: string,
 	state: boolean,
 	runConnection: RBXScriptConnection?,
-	update: (self: PartsManipulatorObject) -> (),
-	start: (self: PartsManipulatorObject   ) -> (),
+	update: UpdateCallback,
+	start: (self: PartsManipulatorObject) -> (),
 	stop: (self: PartsManipulatorObject) -> (),
 	toggle: (self: PartsManipulatorObject  , value: boolean) -> (),
-	updatesCleaner : {[any] : () -> ()}
+	updatesCleaner : {[any] : () -> ()},
+	params : Params,
 }
-
+type Params = {
+	startCallback : Callback?,
+	endCallback : Callback?,
+}
+type UpdateCallback = (self: PartsManipulatorObject) -> () -> ()
+type Callback = () -> ()
 local PartsManipulatorClass = {}
 PartsManipulatorClass.__index = PartsManipulatorClass
 
-function PartsManipulatorClass.new(name: string, updateFunction: (self: PartsManipulatorObject) -> ()): PartsManipulatorObject
-	local self = setmetatable({}, PartsManipulatorClass)
+
+function PartsManipulatorClass.new(name: string, updateCallback: UpdateCallback,params : Params): PartsManipulatorObject
+	local self = setmetatable({}, PartsManipulatorClass) :: PartsManipulatorObject
 	self.name = name
 	self.state = false
 	self.runConnection = nil
 	self.updatesCleaner = {}
-	self.update = updateFunction
+	self.update = updateCallback
+	self.params = params
 	return self
 end
 
@@ -28,6 +37,9 @@ function PartsManipulatorClass.start(self : PartsManipulatorObject)
 		return
 	end
 	self.state = true
+	if self.params.startCallback then
+		self.params.startCallback()
+	end
 	self.runConnection = RunService.Heartbeat:Connect(function()
 		self:update()
 	end)
@@ -42,6 +54,9 @@ function PartsManipulatorClass.stop(self : PartsManipulatorObject)
 	for key,cleaner in pairs(self.updatesCleaner) do
 		cleaner()
 		self.updatesCleaner[key] = nil
+	end
+	if self.params.endCallback then
+		self.params.endCallback()
 	end
 end
 
